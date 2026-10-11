@@ -1,4 +1,5 @@
-const BASE = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Same-origin by default: in production FastAPI serves the site, in dev Vite proxies /chat to :8000.
+const BASE = import.meta.env.VITE_API_URL || "";
 
 export async function chat(question, history) {
   let res;

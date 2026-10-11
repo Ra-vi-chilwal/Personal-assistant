@@ -22,6 +22,13 @@ venv\Scripts\python ingest\ingest_pdfs.py
 ```
 Create the Atlas vector index once with `ingest/create_index.py`.
 
-## Deploy
-- Backend: any Python host (Render, Railway, ...). Start: `uvicorn app.main:app --host 0.0.0.0 --port $PORT`. Set the three env vars. Restrict `allow_origins` in `app/main.py` to your frontend domain.
-- Frontend: Vercel/Netlify, build `npm run build`, output `dist`, env `VITE_API_URL=<your backend URL>`.
+## Deploy (one service on Render)
+FastAPI serves the built React site (`frontend/dist`, committed) and the `/chat` API from one URL.
+
+1. After changing the frontend: `cd frontend && npm run build`, then commit `frontend/dist`.
+2. Render -> New -> Blueprint -> pick this repo (uses `render.yaml`).
+3. Set env vars `GEMINI_API_KEY`, `GROQ_API_KEY`, `MONGODB_URI`.
+4. MongoDB Atlas -> Network Access: allow Render to connect (e.g. `0.0.0.0/0`).
+5. Free plan sleeps when idle; ping `/health` every ~10 min (UptimeRobot) to keep it awake.
+
+Local dev: backend on :8000, `npm run dev` on :5173 (Vite proxies `/chat` to the backend).

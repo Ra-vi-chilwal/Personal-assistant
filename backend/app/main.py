@@ -1,21 +1,15 @@
 import time
 from collections import defaultdict, deque
+from pathlib import Path
 from typing import List, Literal
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from app.rag import ask
 
 app = FastAPI(title="Ravindar Portfolio Chatbot")
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # restrict to your portfolio domain when deploying
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 RATE_LIMIT = 15  # requests
 RATE_WINDOW = 60  # seconds, per client IP
@@ -53,3 +47,10 @@ def chat(body: Chat, request: Request):
     rate_limit(request)
     result = ask(body.question.strip(), [m.model_dump() for m in body.history])
     return {"answer": result["answer"]}
+
+
+# Serve the built React site from the same service (frontend/dist), so one URL does everything.
+# Mounted last so /chat and /health keep priority.
+DIST = Path(__file__).resolve().parents[2] / "frontend" / "dist"
+if DIST.is_dir():
+    app.mount("/", StaticFiles(directory=DIST, html=True), name="site")
