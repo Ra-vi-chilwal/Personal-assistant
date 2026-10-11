@@ -110,6 +110,10 @@ def chunk_qa(path):
         if not block.startswith("Q:") or "A:" not in block:
             continue
         question = block[2 : block.index("A:")].strip()
+        answer = block[block.index("A:") + 2 :].strip()
+        if len(answer) < 3:
+            print(f"  skipped incomplete Q&A (answer too short): {question[:60]}")
+            continue
         chunks.append(
             {"text": block, "source": chapter, "page": 1, "printed_page": 1, "section": question, "chapter": chapter}
         )
